@@ -1,0 +1,36 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read access to public content
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admin can write
+    }
+    
+    // Allow read access to categories and coupons
+    match /categories/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admin can write
+    }
+    
+    match /coupons/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admin can write
+    }
+    
+    // User-specific content - authenticated users can read/write their own data
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Test folder for connection testing
+    match /test/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Default: deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

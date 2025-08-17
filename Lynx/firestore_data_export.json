@@ -1,0 +1,192 @@
+{
+  "categories": {
+    "Food & Beverages": {
+      "name": "Food & Beverages",
+      "imageURL": "https://images.unsplash.com/photo-1504674900240-7747b97952ac?w=400&h=300&fit=crop"
+    },
+    "Retail": {
+      "name": "Retail",
+      "imageURL": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop"
+    },
+    "Health & Beauty": {
+      "name": "Health & Beauty",
+      "imageURL": "https://images.unsplash.com/photo-1559591935-c6c6b9e3a94d?w=400&h=300&fit=crop"
+    },
+    "Sports & Outdoors": {
+      "name": "Sports & Outdoors",
+      "imageURL": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+    },
+    "Technology": {
+      "name": "Technology",
+      "imageURL": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop"
+    },
+    "Automotive": {
+      "name": "Automotive",
+      "imageURL": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop"
+    },
+    "Home & Garden": {
+      "name": "Home & Garden",
+      "imageURL": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop"
+    },
+    "Entertainment": {
+      "name": "Entertainment",
+      "imageURL": "https://images.unsplash.com/photo-1489599835382-67450f1c3d8b?w=400&h=300&fit=crop"
+    }
+  },
+  "coupons": {
+    "1234567890123": {
+      "barcode": "1234567890123",
+      "brand": "McDonald's",
+      "category": "Food & Beverages",
+      "subcategory": "Fast Food",
+      "discount": "20%",
+      "expiration": "12/31/2024",
+      "imageURL": "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
+      "name": "20% Off Any Meal",
+      "terms": "Valid on any meal purchase. Cannot be combined with other offers.",
+      "discountType": true,
+      "companyName": "McDonald's Corporation",
+      "companyCUID": "MC001"
+    },
+    "1234567890124": {
+      "barcode": "1234567890124",
+      "brand": "Starbucks",
+      "category": "Food & Beverages",
+      "subcategory": "Coffee",
+      "discount": "15%",
+      "expiration": "11/30/2024",
+      "imageURL": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=300&fit=crop",
+      "name": "15% Off Any Beverage",
+      "terms": "Valid on any beverage. Excludes food items.",
+      "discountType": true,
+      "companyName": "Starbucks Corporation",
+      "companyCUID": "SB001"
+    },
+    "1234567890125": {
+      "barcode": "1234567890125",
+      "brand": "Walmart",
+      "category": "Retail",
+      "subcategory": "General Merchandise",
+      "discount": "$10",
+      "expiration": "01/15/2025",
+      "imageURL": "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=300&fit=crop",
+      "name": "$10 Off $50 Purchase",
+      "terms": "Valid on purchases of $50 or more. Excludes groceries.",
+      "discountType": false,
+      "companyName": "Walmart Inc.",
+      "companyCUID": "WM001"
+    },
+    "1234567890126": {
+      "barcode": "1234567890126",
+      "brand": "Target",
+      "category": "Retail",
+      "subcategory": "General Merchandise",
+      "discount": "25%",
+      "expiration": "02/28/2025",
+      "imageURL": "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=300&fit=crop",
+      "name": "25% Off Home & Garden",
+      "terms": "Valid on home and garden items. Excludes electronics.",
+      "discountType": true,
+      "companyName": "Target Corporation",
+      "companyCUID": "TG001"
+    },
+    "1234567890127": {
+      "barcode": "1234567890127",
+      "brand": "Apple",
+      "category": "Technology",
+      "subcategory": "Electronics",
+      "discount": "$50",
+      "expiration": "03/31/2025",
+      "imageURL": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=300&fit=crop",
+      "name": "$50 Off iPhone Purchase",
+      "terms": "Valid on iPhone purchases. Cannot be combined with other offers.",
+      "discountType": false,
+      "companyName": "Apple Inc.",
+      "companyCUID": "AP001"
+    },
+    "1234567890128": {
+      "barcode": "1234567890128",
+      "brand": "Samsung",
+      "category": "Technology",
+      "subcategory": "Electronics",
+      "discount": "30%",
+      "expiration": "04/15/2025",
+      "imageURL": "https://images.unsplash.com/photo-1610945415295-d609bb34245d?w=400&h=300&fit=crop",
+      "name": "30% Off Galaxy Devices",
+      "terms": "Valid on Samsung Galaxy smartphones and tablets.",
+      "discountType": true,
+      "companyName": "Samsung Electronics",
+      "companyCUID": "SG001"
+    },
+    "1234567890129": {
+      "barcode": "1234567890129",
+      "brand": "Nike",
+      "category": "Sports & Outdoors",
+      "subcategory": "Athletic Wear",
+      "discount": "40%",
+      "expiration": "05/30/2025",
+      "imageURL": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop",
+      "name": "40% Off Running Shoes",
+      "terms": "Valid on all running shoes. Excludes limited editions.",
+      "discountType": true,
+      "companyName": "Nike Inc.",
+      "companyCUID": "NK001"
+    },
+    "1234567890130": {
+      "barcode": "1234567890130",
+      "brand": "CVS",
+      "category": "Health & Beauty",
+      "subcategory": "Pharmacy",
+      "discount": "$5",
+      "expiration": "06/30/2025",
+      "imageURL": "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=300&fit=crop",
+      "name": "$5 Off $25 Beauty Purchase",
+      "terms": "Valid on beauty products. Excludes prescriptions.",
+      "discountType": false,
+      "companyName": "CVS Health",
+      "companyCUID": "CV001"
+    },
+    "1234567890131": {
+      "barcode": "1234567890131",
+      "brand": "AutoZone",
+      "category": "Automotive",
+      "subcategory": "Auto Parts",
+      "discount": "20%",
+      "expiration": "07/31/2025",
+      "imageURL": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=300&fit=crop",
+      "name": "20% Off Auto Parts",
+      "terms": "Valid on all auto parts. Excludes batteries and oil.",
+      "discountType": true,
+      "companyName": "AutoZone Inc.",
+      "companyCUID": "AZ001"
+    },
+    "1234567890132": {
+      "barcode": "1234567890132",
+      "brand": "Home Depot",
+      "category": "Home & Garden",
+      "subcategory": "Hardware",
+      "discount": "$15",
+      "expiration": "08/31/2025",
+      "imageURL": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
+      "name": "$15 Off $75 Purchase",
+      "terms": "Valid on purchases of $75 or more. Excludes appliances.",
+      "discountType": false,
+      "companyName": "Home Depot Inc.",
+      "companyCUID": "HD001"
+    },
+    "1234567890133": {
+      "barcode": "1234567890133",
+      "brand": "Netflix",
+      "category": "Entertainment",
+      "subcategory": "Streaming",
+      "discount": "2 Months Free",
+      "expiration": "09/30/2025",
+      "imageURL": "https://images.unsplash.com/photo-1489599835382-67450f1c3d8b?w=400&h=300&fit=crop",
+      "name": "2 Months Free Netflix",
+      "terms": "New subscribers only. Valid for standard plan.",
+      "discountType": false,
+      "companyName": "Netflix Inc.",
+      "companyCUID": "NF001"
+    }
+  }
+}
