@@ -40,7 +40,16 @@ struct SettingsView: View {
         .alert("Sign Out", isPresented: $showLogoutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Sign Out", role: .destructive) {
-                authManager.signOut()
+                Task {
+                    let result = await authManager.signOut()
+                    switch result {
+                    case .success:
+                        // Sign out successful, UI will update automatically
+                        break
+                    case .failure(let error):
+                        print("Sign out failed: \(error.localizedDescription)")
+                    }
+                }
             }
         } message: {
             Text("Are you sure you want to sign out?")
@@ -354,9 +363,7 @@ struct SettingRow: View {
     }
 }
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-            .environmentObject(AuthenticationManager())
-    }
+#Preview {
+    SettingsView()
+        .environmentObject(AuthenticationManager())
 }

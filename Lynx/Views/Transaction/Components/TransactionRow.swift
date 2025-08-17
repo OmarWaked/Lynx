@@ -33,15 +33,13 @@ struct TransactionRow: View {
     }
 }
 
-struct TransactionRow_Previews: PreviewProvider {
-    static var previews: some View {
-        TransactionRow(transaction: Transaction(
-            couponId: "123",
-            dateUsed: Date(),
-            storeName: "Walmart",
-            amount: 25.99
-        ))
-        .previewLayout(.sizeThatFits)
-        .padding()
-    }
+#Preview {
+    TransactionRow(transaction: Transaction(
+        couponId: "123456789",
+        dateUsed: Date(),
+        storeName: "Nike Store",
+        amount: 89.99
+    ))
+    .environmentObject(CouponManager())
+    .padding()
 }

@@ -88,7 +88,9 @@ struct CouponDetailView: View {
                         // Action Buttons
                         VStack(spacing: 12) {
                             Button(action: {
-                                couponManager.toggleBookmark(for: coupon)
+                                Task {
+                                    await couponManager.toggleBookmark(for: coupon)
+                                }
                             }) {
                                 HStack {
                                     Image(systemName: couponManager.isBookmarked(coupon) ? "bookmark.fill" : "bookmark")
@@ -185,22 +187,20 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-struct CouponDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        CouponDetailView(coupon: Coupon(
-            barcode: "123456789",
-            brand: "Nike",
-            category: "Sports",
-            subcategory: "Shoes",
-            discount: "20% OFF",
-            expiration: "12/31/2024",
-            imageURL: "",
-            name: "Running Shoes Discount",
-            terms: "Valid on select items",
-            discountType: true,
-            companyName: "Nike",
-            companyCUID: "nike123"
-        ))
-        .environmentObject(CouponManager())
-    }
+#Preview {
+    CouponDetailView(coupon: Coupon(
+        barcode: "123456789",
+        brand: "Nike",
+        category: "Sports",
+        subcategory: "Shoes",
+        discount: "20% OFF",
+        expiration: "12/31/2024",
+        imageURL: "https://example.com/image.jpg",
+        name: "20% Off Running Shoes",
+        terms: "Valid until December 31, 2024",
+        discountType: true,
+        companyName: "Nike",
+        companyCUID: "nike123"
+    ))
+    .environmentObject(CouponManager())
 }

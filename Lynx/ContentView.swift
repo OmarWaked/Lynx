@@ -19,16 +19,14 @@ struct ContentView: View {
                 AuthenticationView()
             }
         }
-        .onAppear {
-            authManager.checkAuthenticationStatus()
+        .task {
+            await authManager.checkAuthenticationStatus()
         }
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .environmentObject(AuthenticationManager())
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    ContentView()
+        .environmentObject(AuthenticationManager())
+        .environmentObject(CouponManager())
 }

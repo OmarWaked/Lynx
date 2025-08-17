@@ -38,8 +38,8 @@ struct CouponCard: View {
                     
                     // Bookmark button overlay
                     Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            couponManager.toggleBookmark(for: coupon)
+                        Task<Void, Never> {
+                            await couponManager.toggleBookmark(for: coupon)
                         }
                     }) {
                         ZStack {
@@ -143,24 +143,22 @@ struct CouponCard: View {
     }
 }
 
-struct CouponCard_Previews: PreviewProvider {
-    static var previews: some View {
-        CouponCard(coupon: Coupon(
-            barcode: "123456789",
-            brand: "Nike",
-            category: "Sports",
-            subcategory: "Shoes",
-            discount: "20% OFF",
-            expiration: "12/31/2024",
-            imageURL: "https://example.com/image.jpg",
-            name: "20% Off Running Shoes",
-            terms: "Valid until December 31, 2024",
-            discountType: true,
-            companyName: "Nike",
-            companyCUID: "nike123"
-        ))
-        .environmentObject(CouponManager())
-        .padding()
-        .background(Color(.systemGroupedBackground))
-    }
+#Preview {
+    CouponCard(coupon: Coupon(
+        barcode: "123456789",
+        brand: "Nike",
+        category: "Sports",
+        subcategory: "Shoes",
+        discount: "20% OFF",
+        expiration: "12/31/2024",
+        imageURL: "https://example.com/image.jpg",
+        name: "20% Off Running Shoes",
+        terms: "Valid until December 31, 2024",
+        discountType: true,
+        companyName: "Nike",
+        companyCUID: "nike123"
+    ))
+    .environmentObject(CouponManager())
+    .padding()
+    .background(Color(.systemGroupedBackground))
 }

@@ -46,7 +46,7 @@ struct TransactionView: View {
                 showAddTransaction = true
             })
             .refreshable {
-                couponManager.fetchTransactions()
+                await couponManager.fetchTransactions()
             }
         }
         .sheet(isPresented: $showAddTransaction) {
@@ -55,9 +55,7 @@ struct TransactionView: View {
     }
 }
 
-struct TransactionView_Previews: PreviewProvider {
-    static var previews: some View {
-        TransactionView()
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    TransactionView()
+        .environmentObject(CouponManager())
 }

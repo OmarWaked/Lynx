@@ -108,21 +108,20 @@ struct ReportErrorView: View {
     }
 }
 
-struct ReportErrorView_Previews: PreviewProvider {
-    static var previews: some View {
-        ReportErrorView(coupon: Coupon(
-            barcode: "123456789",
-            brand: "Nike",
-            category: "Sports",
-            subcategory: "Shoes",
-            discount: "20% OFF",
-            expiration: "12/31/2024",
-            imageURL: "",
-            name: "Running Shoes Discount",
-            terms: "Valid on select items",
-            discountType: true,
-            companyName: "Nike",
-            companyCUID: "nike123"
-        ))
-    }
+#Preview {
+    ReportErrorView(coupon: Coupon(
+        barcode: "123456789",
+        brand: "Nike",
+        category: "Sports",
+        subcategory: "Shoes",
+        discount: "20% OFF",
+        expiration: "12/31/2024",
+        imageURL: "https://example.com/image.jpg",
+        name: "20% Off Running Shoes",
+        terms: "Valid until December 31, 2024",
+        discountType: true,
+        companyName: "Nike",
+        companyCUID: "nike123"
+    ))
+    .environmentObject(CouponManager())
 }

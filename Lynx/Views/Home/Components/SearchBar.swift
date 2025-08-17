@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SearchBar: View {
     @Binding var text: String
-    let onSearch: () -> Void
+    let onSearch: () async -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -24,7 +24,9 @@ struct SearchBar: View {
                     .font(.system(size: 16, weight: .medium))
                     .textFieldStyle(PlainTextFieldStyle())
                     .onSubmit {
-                        onSearch()
+                        Task {
+                            await onSearch()
+                        }
                     }
                 
                 if !text.isEmpty {
@@ -32,7 +34,9 @@ struct SearchBar: View {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             text = ""
                         }
-                        onSearch()
+                        Task {
+                            await onSearch()
+                        }
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 16, weight: .medium))
@@ -54,7 +58,11 @@ struct SearchBar: View {
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
             
             // Search button
-            Button(action: onSearch) {
+            Button(action: {
+                Task {
+                    await onSearch()
+                }
+            }) {
                 Text("Search")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
@@ -76,10 +84,8 @@ struct SearchBar: View {
     }
 }
 
-struct SearchBar_Previews: PreviewProvider {
-    static var previews: some View {
-        SearchBar(text: .constant(""), onSearch: {})
-            .padding()
-            .background(Color(.systemGroupedBackground))
-    }
+#Preview {
+    SearchBar(text: .constant(""), onSearch: {})
+        .padding()
+        .background(Color(.systemGroupedBackground))
 }

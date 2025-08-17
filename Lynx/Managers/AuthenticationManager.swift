@@ -11,6 +11,7 @@ import Firebase
 import FirebaseAuth
 import Combine
 
+@MainActor
 class AuthenticationManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: UserProfile?
@@ -25,10 +26,10 @@ class AuthenticationManager: ObservableObject {
     
     private func setupAuthStateListener() {
         Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self?.isAuthenticated = user != nil
                 if let user = user {
-                    self?.fetchUserProfile(uid: user.uid)
+                    await self?.fetchUserProfile(uid: user.uid)
                 } else {
                     self?.currentUser = nil
                 }
@@ -36,36 +37,34 @@ class AuthenticationManager: ObservableObject {
         }
     }
     
-    func checkAuthenticationStatus() {
+    func checkAuthenticationStatus() async {
         isLoading = true
+        defer { isLoading = false }
+        
         if let user = Auth.auth().currentUser {
-            fetchUserProfile(uid: user.uid)
-        } else {
-            isLoading = false
+            await fetchUserProfile(uid: user.uid)
         }
     }
     
-    private func fetchUserProfile(uid: String) {
+    private func fetchUserProfile(uid: String) async {
         let db = Firestore.firestore()
-        db.collection("users").document(uid).getDocument { [weak self] document, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let document = document, document.exists {
-                    do {
-                        let userProfile = try document.data(as: UserProfile.self)
-                        self?.currentUser = userProfile
-                    } catch {
-                        self?.errorMessage = "Failed to load user profile: \(error.localizedDescription)"
-                    }
-                } else {
-                    // Create new user profile
-                    self?.createUserProfile(uid: uid)
-                }
+        
+        do {
+            let document = try await db.collection("users").document(uid).getDocument()
+            
+            if document.exists {
+                let userProfile = try document.data(as: UserProfile.self)
+                currentUser = userProfile
+            } else {
+                // Create new user profile
+                await createUserProfile(uid: uid)
             }
+        } catch {
+            errorMessage = "Failed to load user profile: \(error.localizedDescription)"
         }
     }
     
-    private func createUserProfile(uid: String) {
+    private func createUserProfile(uid: String) async {
         guard let user = Auth.auth().currentUser else { return }
         
         let userProfile = UserProfile(
@@ -79,70 +78,67 @@ class AuthenticationManager: ObservableObject {
         let db = Firestore.firestore()
         do {
             try db.collection("users").document(uid).setData(from: userProfile)
-            self.currentUser = userProfile
+            currentUser = userProfile
         } catch {
-            self.errorMessage = "Failed to create user profile: \(error.localizedDescription)"
+            errorMessage = "Failed to create user profile: \(error.localizedDescription)"
         }
     }
     
-    func signIn(email: String, password: String) {
+    func signIn(email: String, password: String) async -> Result<Void, Error> {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                }
-            }
-        }
-    }
-    
-    func signUp(email: String, password: String, displayName: String) {
-        isLoading = true
-        errorMessage = nil
-        
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                } else if let user = result?.user {
-                    // Update display name
-                    let changeRequest = user.createProfileChangeRequest()
-                    changeRequest.displayName = displayName
-                    changeRequest.commitChanges { error in
-                        if let error = error {
-                            DispatchQueue.main.async {
-                                self?.errorMessage = error.localizedDescription
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func signOut() {
         do {
-            try Auth.auth().signOut()
+            let result = try await Auth.auth().signIn(withEmail: email, password: password)
+            return .success(())
         } catch {
             errorMessage = error.localizedDescription
+            return .failure(error)
         }
     }
     
-    func resetPassword(email: String) {
+    func signUp(email: String, password: String, displayName: String) async -> Result<Void, Error> {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
-        Auth.auth().sendPasswordReset(withEmail: email) { [weak self] error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                }
-            }
+        do {
+            let result = try await Auth.auth().createUser(withEmail: email, password: password)
+            
+            // Update display name
+            let changeRequest = result.user.createProfileChangeRequest()
+            changeRequest.displayName = displayName
+            try await changeRequest.commitChanges()
+            
+            return .success(())
+        } catch {
+            errorMessage = error.localizedDescription
+            return .failure(error)
+        }
+    }
+    
+    func signOut() async -> Result<Void, Error> {
+        do {
+            try Auth.auth().signOut()
+            return .success(())
+        } catch {
+            errorMessage = error.localizedDescription
+            return .failure(error)
+        }
+    }
+    
+    func resetPassword(email: String) async -> Result<Void, Error> {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+            return .success(())
+        } catch {
+            errorMessage = error.localizedDescription
+            return .failure(error)
         }
     }
 }

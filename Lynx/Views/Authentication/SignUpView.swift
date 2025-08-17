@@ -207,13 +207,21 @@ struct SignUpView: View {
     }
     
     private func signUp() {
-        authManager.signUp(email: email, password: password, displayName: displayName)
+        Task {
+            let result = await authManager.signUp(email: email, password: password, displayName: displayName)
+            switch result {
+            case .success:
+                // Authentication successful, UI will update automatically
+                break
+            case .failure(let error):
+                // Error is already handled in the manager
+                print("Sign up failed: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
-struct SignUpView_Previews: PreviewProvider {
-    static var previews: some View {
-        SignUpView()
-            .environmentObject(AuthenticationManager())
-    }
+#Preview {
+    SignUpView()
+        .environmentObject(AuthenticationManager())
 }

@@ -34,15 +34,13 @@ struct BookmarkedView: View {
             .navigationTitle("Bookmarks")
             .navigationBarTitleDisplayMode(.large)
             .refreshable {
-                couponManager.fetchBookmarkedItems()
+                await couponManager.fetchBookmarkedItems()
             }
         }
     }
 }
 
-struct BookmarkedView_Previews: PreviewProvider {
-    static var previews: some View {
-        BookmarkedView()
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    BookmarkedView()
+        .environmentObject(CouponManager())
 }

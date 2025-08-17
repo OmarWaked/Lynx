@@ -59,19 +59,21 @@ struct AddTransactionView: View {
         guard let coupon = selectedCoupon,
               let amountValue = Double(amount) else { return }
         
-        couponManager.addTransaction(
-            couponId: coupon.barcode,
-            storeName: storeName,
-            amount: amountValue
-        )
-        
-        presentationMode.wrappedValue.dismiss()
+        Task {
+            await couponManager.addTransaction(
+                couponId: coupon.barcode,
+                storeName: storeName,
+                amount: amountValue
+            )
+            
+            await MainActor.run {
+                presentationMode.wrappedValue.dismiss()
+            }
+        }
     }
 }
 
-struct AddTransactionView_Previews: PreviewProvider {
-    static var previews: some View {
-        AddTransactionView()
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    AddTransactionView()
+        .environmentObject(CouponManager())
 }

@@ -12,6 +12,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
+@MainActor
 class CouponManager: ObservableObject {
     @Published var coupons: [Coupon] = []
     @Published var categories: [Category] = []
@@ -26,216 +27,161 @@ class CouponManager: ObservableObject {
     private let storageManager = StorageManager()
     
     init() {
-        fetchCategories()
-        fetchCoupons()
-        fetchBookmarkedItems()
-        fetchTransactions()
-        
-        // Seed demo data if needed
         Task {
+            await fetchCategories()
+            await fetchCoupons()
+            await fetchBookmarkedItems()
+            await fetchTransactions()
+            
+            // Seed demo data if needed
             await seedDemoDataIfNeeded()
         }
     }
     
     // MARK: - Categories
-    func fetchCategories() {
+    func fetchCategories() async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
-        db.collection("categories").getDocuments { [weak self] snapshot, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let error = error {
-                    print("❌ Failed to fetch categories: \(error.localizedDescription)")
-                    if error.localizedDescription.contains("Missing or insufficient permissions") {
-                        self?.errorMessage = "Firebase permissions issue. Please check security rules."
-                        print("   🔒 This usually means Firestore security rules need to be updated")
-                        print("   📋 Deploy the firestore_rules.rules file to Firebase Console")
-                    } else {
-                        self?.errorMessage = error.localizedDescription
-                    }
-                    return
-                }
-                
-                guard let documents = snapshot?.documents else { 
-                    print("⚠️  No categories found")
-                    return 
-                }
-                
-                print("✅ Found \(documents.count) categories")
-                do {
-                    self?.categories = try documents.compactMap { document in
-                        try document.data(as: Category.self)
-                    }
-                    print("✅ Successfully decoded \(self?.categories.count ?? 0) categories")
-                } catch {
-                    self?.errorMessage = "Failed to decode categories: \(error.localizedDescription)"
-                    print("❌ Category decoding error: \(error.localizedDescription)")
-                }
+        do {
+            let snapshot = try await db.collection("categories").getDocuments()
+            
+            let documents = snapshot.documents
+            
+            print("✅ Found \(documents.count) categories")
+            
+            categories = try documents.compactMap { document in
+                try document.data(as: Category.self)
+            }
+            
+            print("✅ Successfully decoded \(categories.count) categories")
+        } catch {
+            print("❌ Failed to fetch categories: \(error.localizedDescription)")
+            if error.localizedDescription.contains("Missing or insufficient permissions") {
+                errorMessage = "Firebase permissions issue. Please check security rules."
+                print("   🔒 This usually means Firestore security rules need to be updated")
+                print("   📋 Deploy the firestore_rules.rules file to Firebase Console")
+            } else {
+                errorMessage = error.localizedDescription
             }
         }
     }
     
     // MARK: - Coupons
-    func fetchCoupons() {
+    func fetchCoupons() async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
-        db.collection("coupons")
-            .getDocuments { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                    if let error = error {
-                        print("❌ Failed to fetch coupons: \(error.localizedDescription)")
-                        if error.localizedDescription.contains("Missing or insufficient permissions") {
-                            self?.errorMessage = "Firebase permissions issue. Please check security rules."
-                            print("   🔒 This usually means Firestore security rules need to be updated")
-                            print("   📋 Deploy the firestore_rules.rules file to Firebase Console")
-                        } else {
-                            self?.errorMessage = error.localizedDescription
-                        }
-                        return
-                    }
-                    
-                    guard let documents = snapshot?.documents else { 
-                        print("⚠️  No coupons found")
-                        return 
-                    }
-                    
-                    print("✅ Found \(documents.count) coupons")
-                    do {
-                        self?.coupons = try documents.compactMap { document in
-                            try document.data(as: Coupon.self)
-                        }
-                        print("✅ Successfully decoded \(self?.coupons.count ?? 0) coupons")
-                        self?.updateFeaturedCoupons()
-                    } catch {
-                        self?.errorMessage = "Failed to decode coupons: \(error.localizedDescription)"
-                        print("❌ Coupon decoding error: \(error.localizedDescription)")
-                    }
-                }
+        do {
+            let snapshot = try await db.collection("coupons").getDocuments()
+            
+            let documents = snapshot.documents
+            
+            print("✅ Found \(documents.count) coupons")
+            
+            coupons = try documents.compactMap { document in
+                try document.data(as: Coupon.self)
             }
+            
+            print("✅ Successfully decoded \(coupons.count) coupons")
+            updateFeaturedCoupons()
+        } catch {
+            print("❌ Failed to fetch coupons: \(error.localizedDescription)")
+            if error.localizedDescription.contains("Missing or insufficient permissions") {
+                errorMessage = "Firebase permissions issue. Please check security rules."
+                print("   🔒 This usually means Firestore security rules need to be updated")
+                print("   📋 Deploy the firestore_rules.rules file to Firebase Console")
+            } else {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
     
-    func fetchCouponsByCategory(_ category: String) {
+    func fetchCouponsByCategory(_ category: String) async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
         print("🔍 Fetching coupons for category: '\(category)'")
         
-        db.collection("coupons")
-            .whereField("category", isEqualTo: category)
-            .getDocuments { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                    if let error = error {
-                        print("❌ Error fetching coupons for category '\(category)': \(error.localizedDescription)")
-                        if error.localizedDescription.contains("Missing or insufficient permissions") {
-                            self?.errorMessage = "Firebase permissions issue. Please check security rules."
-                            print("   🔒 This usually means Firestore security rules need to be updated")
-                        } else {
-                            self?.errorMessage = error.localizedDescription
-                        }
-                        return
-                    }
-                    
-                    guard let documents = snapshot?.documents else { 
-                        print("⚠️  No documents found for category '\(category)'")
-                        self?.errorMessage = "No coupons found for this category"
-                        return 
-                    }
-                    
-                    print("✅ Found \(documents.count) coupons for category '\(category)'")
-                    
-                    do {
-                        let categoryCoupons = try documents.compactMap { document in
-                            try document.data(as: Coupon.self)
-                        }
-                        
-                        print("✅ Successfully decoded \(categoryCoupons.count) coupons for category '\(category)'")
-                        
-                        // Update the main coupons array with the filtered results
-                        self?.coupons = categoryCoupons
-                        
-                    } catch {
-                        print("❌ Failed to decode coupons for category '\(category)': \(error.localizedDescription)")
-                        self?.errorMessage = "Failed to decode coupons: \(error.localizedDescription)"
-                    }
-                }
+        do {
+            let snapshot = try await db.collection("coupons")
+                .whereField("category", isEqualTo: category)
+                .getDocuments()
+            
+            let documents = snapshot.documents
+            
+            print("✅ Found \(documents.count) coupons for category '\(category)'")
+            
+            let categoryCoupons = try documents.compactMap { document in
+                try document.data(as: Coupon.self)
             }
+            
+            print("✅ Successfully decoded \(categoryCoupons.count) coupons for category '\(category)'")
+            
+            // Update the main coupons array with the filtered results
+            coupons = categoryCoupons
+            
+        } catch {
+            print("❌ Failed to fetch coupons for category '\(category)': \(error.localizedDescription)")
+            if error.localizedDescription.contains("Missing or insufficient permissions") {
+                errorMessage = "Firebase permissions issue. Please check security rules."
+                print("   🔒 This usually means Firestore security rules need to be updated")
+            } else {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
     
     // MARK: - Get Coupons by Category (without affecting main array)
-    func getCouponsByCategory(_ category: String, completion: @escaping ([Coupon], Error?) -> Void) {
+    func getCouponsByCategory(_ category: String) async throws -> [Coupon] {
         print("🔍 Getting coupons for category: '\(category)' (non-destructive)")
         
-        db.collection("coupons")
+        let snapshot = try await db.collection("coupons")
             .whereField("category", isEqualTo: category)
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    print("❌ Error getting coupons for category '\(category)': \(error.localizedDescription)")
-                    completion([], error)
-                    return
-                }
-                
-                guard let documents = snapshot?.documents else { 
-                    print("⚠️  No documents found for category '\(category)'")
-                    completion([], nil)
-                    return 
-                }
-                
-                print("✅ Found \(documents.count) coupons for category '\(category)'")
-                
-                do {
-                    let categoryCoupons = try documents.compactMap { document in
-                        try document.data(as: Coupon.self)
-                    }
-                    
-                    print("✅ Successfully decoded \(categoryCoupons.count) coupons for category '\(category)'")
-                    completion(categoryCoupons, nil)
-                    
-                } catch {
-                    print("❌ Failed to decode coupons for category '\(category)': \(error.localizedDescription)")
-                    completion([], error)
-                }
-            }
+            .getDocuments()
+        
+        let documents = snapshot.documents
+        
+        print("✅ Found \(documents.count) coupons for category '\(category)'")
+        
+        let categoryCoupons = try documents.compactMap { document in
+            try document.data(as: Coupon.self)
+        }
+        
+        print("✅ Successfully decoded \(categoryCoupons.count) coupons for category '\(category)'")
+        return categoryCoupons
     }
     
-    func searchCoupons(query: String) {
+    func searchCoupons(query: String) async {
         guard !query.isEmpty else {
-            fetchCoupons()
+            await fetchCoupons()
             return
         }
         
         isLoading = true
+        defer { isLoading = false }
         
-        db.collection("coupons")
-            .getDocuments { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    self?.isLoading = false
-                    if let error = error {
-                        self?.errorMessage = error.localizedDescription
-                        return
-                    }
-                    
-                    guard let documents = snapshot?.documents else { return }
-                    
-                    do {
-                        let allCoupons = try documents.compactMap { document in
-                            try document.data(as: Coupon.self)
-                        }
-                        
-                        // Filter by search query
-                        self?.coupons = allCoupons.filter { coupon in
-                            coupon.name.localizedCaseInsensitiveContains(query) ||
-                            coupon.brand.localizedCaseInsensitiveContains(query) ||
-                            coupon.category.localizedCaseInsensitiveContains(query)
-                        }
-                    } catch {
-                        self?.errorMessage = "Failed to decode coupons: \(error.localizedDescription)"
-                    }
-                }
+        do {
+            let snapshot = try await db.collection("coupons").getDocuments()
+            
+            let documents = snapshot.documents
+            
+            let allCoupons = try documents.compactMap { document in
+                try document.data(as: Coupon.self)
             }
+            
+            // Filter by search query
+            coupons = allCoupons.filter { coupon in
+                coupon.name.localizedCaseInsensitiveContains(query) ||
+                coupon.brand.localizedCaseInsensitiveContains(query) ||
+                coupon.category.localizedCaseInsensitiveContains(query)
+            }
+        } catch {
+            errorMessage = "Failed to decode coupons: \(error.localizedDescription)"
+        }
     }
     
     private func updateFeaturedCoupons() {
@@ -244,32 +190,25 @@ class CouponManager: ObservableObject {
     }
     
     // MARK: - Bookmarks
-    func fetchBookmarkedItems() {
+    func fetchBookmarkedItems() async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
-        db.collection("users").document(userId)
-            .collection("bookmarks")
-            .getDocuments { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        self?.errorMessage = error.localizedDescription
-                        return
-                    }
-                    
-                    guard let documents = snapshot?.documents else { return }
-                    
-                    do {
-                        self?.bookmarkedItems = try documents.compactMap { document in
-                            try document.data(as: BookmarkedItem.self)
-                        }
-                    } catch {
-                        self?.errorMessage = "Failed to decode bookmarks: \(error.localizedDescription)"
-                    }
-                }
+        do {
+            let snapshot = try await db.collection("users").document(userId)
+                .collection("bookmarks")
+                .getDocuments()
+            
+            let documents = snapshot.documents
+            
+            bookmarkedItems = try documents.compactMap { document in
+                try document.data(as: BookmarkedItem.self)
             }
+        } catch {
+            errorMessage = "Failed to decode bookmarks: \(error.localizedDescription)"
+        }
     }
     
-    func toggleBookmark(for coupon: Coupon) {
+    func toggleBookmark(for coupon: Coupon) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         let bookmarkRef = db.collection("users").document(userId)
@@ -278,16 +217,11 @@ class CouponManager: ObservableObject {
         // Check if already bookmarked
         if bookmarkedItems.contains(where: { $0.barcode == coupon.barcode }) {
             // Remove bookmark
-            bookmarkRef.delete { [weak self] error in
-                if let error = error {
-                    DispatchQueue.main.async {
-                        self?.errorMessage = error.localizedDescription
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        self?.bookmarkedItems.removeAll { $0.barcode == coupon.barcode }
-                    }
-                }
+            do {
+                try await bookmarkRef.delete()
+                bookmarkedItems.removeAll { $0.barcode == coupon.barcode }
+            } catch {
+                errorMessage = error.localizedDescription
             }
         } else {
             // Add bookmark
@@ -307,13 +241,9 @@ class CouponManager: ObservableObject {
             
             do {
                 try bookmarkRef.setData(from: bookmarkedItem)
-                DispatchQueue.main.async {
-                    self.bookmarkedItems.append(bookmarkedItem)
-                }
+                bookmarkedItems.append(bookmarkedItem)
             } catch {
-                DispatchQueue.main.async {
-                    self.errorMessage = error.localizedDescription
-                }
+                errorMessage = error.localizedDescription
             }
         }
     }
@@ -323,33 +253,26 @@ class CouponManager: ObservableObject {
     }
     
     // MARK: - Transactions
-    func fetchTransactions() {
+    func fetchTransactions() async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
-        db.collection("users").document(userId)
-            .collection("transactions")
-            .order(by: "dateUsed", descending: true)
-            .getDocuments { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        self?.errorMessage = error.localizedDescription
-                        return
-                    }
-                    
-                    guard let documents = snapshot?.documents else { return }
-                    
-                    do {
-                        self?.transactions = try documents.compactMap { document in
-                            try document.data(as: Transaction.self)
-                        }
-                    } catch {
-                        self?.errorMessage = "Failed to decode transactions: \(error.localizedDescription)"
-                    }
-                }
+        do {
+            let snapshot = try await db.collection("users").document(userId)
+                .collection("transactions")
+                .order(by: "dateUsed", descending: true)
+                .getDocuments()
+            
+            let documents = snapshot.documents
+            
+            transactions = try documents.compactMap { document in
+                try document.data(as: Transaction.self)
             }
+        } catch {
+            errorMessage = "Failed to decode transactions: \(error.localizedDescription)"
+        }
     }
     
-    func addTransaction(couponId: String, storeName: String, amount: Double) {
+    func addTransaction(couponId: String, storeName: String, amount: Double) async {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         let transaction = Transaction(
@@ -364,13 +287,9 @@ class CouponManager: ObservableObject {
         
         do {
             try transactionRef.setData(from: transaction)
-            DispatchQueue.main.async {
-                self.transactions.insert(transaction, at: 0)
-            }
+            transactions.insert(transaction, at: 0)
         } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = error.localizedDescription
-            }
+            errorMessage = error.localizedDescription
         }
     }
     
@@ -384,10 +303,8 @@ class CouponManager: ObservableObject {
             await seeder.seedAllData()
             
             // Refresh data after seeding
-            await MainActor.run {
-                self.fetchCategories()
-                self.fetchCoupons()
-            }
+            await fetchCategories()
+            await fetchCoupons()
         }
     }
 }

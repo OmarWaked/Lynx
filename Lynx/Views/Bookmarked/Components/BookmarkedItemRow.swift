@@ -73,7 +73,9 @@ struct BookmarkedItemRow: View {
                         companyName: "",
                         companyCUID: ""
                     )
-                    couponManager.toggleBookmark(for: coupon)
+                    Task {
+                        await couponManager.toggleBookmark(for: coupon)
+                    }
                 }) {
                     Image(systemName: "bookmark.fill")
                         .foregroundColor(.red)
@@ -103,23 +105,20 @@ struct BookmarkedItemRow: View {
     }
 }
 
-struct BookmarkedItemRow_Previews: PreviewProvider {
-    static var previews: some View {
-        BookmarkedItemRow(bookmarkedItem: BookmarkedItem(
-            barcode: "123456789",
-            brand: "Nike",
-            category: "Sports",
-            subcategory: "Shoes",
-            discount: "20% OFF",
-            expiration: "12/31/2024",
-            imageURL: "",
-            name: "Running Shoes Discount",
-            terms: "Valid on select items",
-            discountType: true,
-            dateBookmarked: Date()
-        ))
-        .environmentObject(CouponManager())
-        .previewLayout(.sizeThatFits)
-        .padding()
-    }
+#Preview {
+    BookmarkedItemRow(bookmarkedItem: BookmarkedItem(
+        barcode: "123456789",
+        brand: "Nike",
+        category: "Sports",
+        subcategory: "Shoes",
+        discount: "20% OFF",
+        expiration: "12/31/2024",
+        imageURL: "",
+        name: "Running Shoes Discount",
+        terms: "Valid on select items",
+        discountType: true,
+        dateBookmarked: Date()
+    ))
+    .environmentObject(CouponManager())
+    .padding()
 }

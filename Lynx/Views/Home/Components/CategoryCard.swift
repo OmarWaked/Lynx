@@ -80,15 +80,14 @@ struct CategoryCard: View {
     }
 }
 
-struct CategoryCard_Previews: PreviewProvider {
-    static var previews: some View {
-        CategoryCard(category: Category(
-            name: "Sports & Fitness",
-            imageURL: "https://example.com/sports.jpg"
-        )) {
-            print("Category tapped")
-        }
-        .padding()
-        .background(Color(.systemGroupedBackground))
-    }
+#Preview {
+    CategoryCard(category: Category(
+        name: "Sports",
+        imageURL: "https://example.com/sports.jpg"
+    ), onTap: {
+        print("Category tapped")
+    })
+    .frame(width: 150, height: 100)
+    .padding()
+    .background(Color(.systemGroupedBackground))
 }

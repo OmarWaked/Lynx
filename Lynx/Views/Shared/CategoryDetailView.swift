@@ -121,9 +121,21 @@ struct CategoryDetailView: View {
         print("📡 No existing coupons found, fetching from Firebase...")
         
         // If no existing coupons, fetch from Firebase using non-destructive method
-        couponManager.getCouponsByCategory(category.name) { coupons, error in
-            DispatchQueue.main.async {
-                if let error = error {
+        Task {
+            do {
+                let coupons = try await couponManager.getCouponsByCategory(category.name)
+                await MainActor.run {
+                    if coupons.isEmpty {
+                        print("⚠️ No coupons found for category '\(self.category.name)'")
+                        self.errorMessage = "No coupons found for this category"
+                    } else {
+                        print("✅ Successfully loaded \(coupons.count) coupons for category '\(self.category.name)'")
+                        self.filteredCoupons = coupons
+                    }
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
                     print("❌ Error fetching coupons: \(error.localizedDescription)")
                     self.errorMessage = error.localizedDescription
                     
@@ -134,22 +146,17 @@ struct CategoryDetailView: View {
                         self.filteredCoupons = fallbackCoupons
                         self.errorMessage = nil
                     }
-                } else if coupons.isEmpty {
-                    print("⚠️ No coupons found for category '\(self.category.name)'")
-                    self.errorMessage = "No coupons found for this category"
-                } else {
-                    print("✅ Successfully loaded \(coupons.count) coupons for category '\(self.category.name)'")
-                    self.filteredCoupons = coupons
+                    self.isLoading = false
                 }
-                self.isLoading = false
             }
         }
     }
 }
 
-struct CategoryDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        CategoryDetailView(category: Category(name: "Sports & Outdoors", imageURL: ""))
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    CategoryDetailView(category: Category(
+        name: "Sports",
+        imageURL: "https://example.com/sports.jpg"
+    ))
+    .environmentObject(CouponManager())
 }

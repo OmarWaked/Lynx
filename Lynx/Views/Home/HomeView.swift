@@ -25,9 +25,9 @@ struct HomeView: View {
                         // Modern Search Bar
                         SearchBar(text: $searchText, onSearch: {
                             if !searchText.isEmpty {
-                                couponManager.searchCoupons(query: searchText)
+                                await couponManager.searchCoupons(query: searchText)
                             } else {
-                                couponManager.fetchCoupons()
+                                await couponManager.fetchCoupons()
                             }
                         })
                         .padding(.horizontal, 20)
@@ -124,7 +124,9 @@ struct HomeView: View {
                                     .foregroundColor(.secondary)
                                 
                                 Button("Refresh Categories") {
-                                    couponManager.fetchCategories()
+                                    Task {
+                                        await couponManager.fetchCategories()
+                                    }
                                 }
                                 .buttonStyle(.borderedProminent)
                             }
@@ -206,8 +208,8 @@ struct HomeView: View {
                 }
             )
             .refreshable {
-                couponManager.fetchCoupons()
-                couponManager.fetchCategories()
+                await couponManager.fetchCoupons()
+                await couponManager.fetchCategories()
             }
         }
         .sheet(item: $selectedCategory) { category in
@@ -216,9 +218,7 @@ struct HomeView: View {
     }
 }
 
-struct HomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeView()
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    HomeView()
+        .environmentObject(CouponManager())
 }

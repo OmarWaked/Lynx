@@ -15,79 +15,60 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
-                    VStack(spacing: 4) {
-                        Image(systemName: selectedTab == 0 ? "house.fill" : "house")
-                            .font(.system(size: 20, weight: .medium))
-                        Text("Home")
-                            .font(.system(size: 12, weight: .medium))
-                    }
+                    Label("Home", systemImage: selectedTab == 0 ? "house.fill" : "house")
                 }
                 .tag(0)
             
             TransactionView()
                 .tabItem {
-                    VStack(spacing: 4) {
-                        Image(systemName: selectedTab == 1 ? "cart.fill" : "cart")
-                            .font(.system(size: 20, weight: .medium))
-                        Text("Transactions")
-                            .font(.system(size: 12, weight: .medium))
-                    }
+                    Label("Transactions", systemImage: selectedTab == 1 ? "cart.fill" : "cart")
                 }
                 .tag(1)
             
             BookmarkedView()
                 .tabItem {
-                    VStack(spacing: 4) {
-                        Image(systemName: selectedTab == 2 ? "bookmark.fill" : "bookmark")
-                            .font(.system(size: 20, weight: .medium))
-                        Text("Bookmarks")
-                            .font(.system(size: 12, weight: .medium))
-                    }
+                    Label("Bookmarks", systemImage: selectedTab == 2 ? "bookmark.fill" : "bookmark")
                 }
                 .tag(2)
             
             SettingsView()
                 .tabItem {
-                    VStack(spacing: 4) {
-                        Image(systemName: selectedTab == 3 ? "gear.circle.fill" : "gear.circle")
-                            .font(.system(size: 20, weight: .medium))
-                        Text("Settings")
-                            .font(.system(size: 12, weight: .medium))
-                    }
+                    Label("Settings", systemImage: selectedTab == 3 ? "gear.circle.fill" : "gear.circle")
                 }
                 .tag(3)
         }
-        .accentColor(.blue)
+        .tint(.blue)
         .onAppear {
-            // Customize tab bar appearance
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor.systemBackground
-            
-            // Normal state
-            appearance.stackedLayoutAppearance.normal.iconColor = UIColor.systemGray
-            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-                .foregroundColor: UIColor.systemGray,
-                .font: UIFont.systemFont(ofSize: 12, weight: .medium)
-            ]
-            
-            // Selected state
-            appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
-            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                .foregroundColor: UIColor.systemBlue,
-                .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
-            ]
-            
-            UITabBar.appearance().standardAppearance = appearance
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+            configureTabBarAppearance()
         }
+    }
+    
+    private func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor.systemBackground
+        
+        // Normal state
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.systemGray
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.systemGray,
+            .font: UIFont.systemFont(ofSize: 12, weight: .medium)
+        ]
+        
+        // Selected state
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.systemBlue,
+            .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
+        ]
+        
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 
-struct MainTabView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainTabView()
-            .environmentObject(AuthenticationManager())
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    MainTabView()
+        .environmentObject(AuthenticationManager())
+        .environmentObject(CouponManager())
 }

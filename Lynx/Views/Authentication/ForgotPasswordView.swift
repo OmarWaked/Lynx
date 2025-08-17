@@ -186,14 +186,20 @@ struct ForgotPasswordView: View {
     }
     
     private func resetPassword() {
-        authManager.resetPassword(email: email)
-        showSuccessMessage = true
+        Task {
+            let result = await authManager.resetPassword(email: email)
+            switch result {
+            case .success:
+                showSuccessMessage = true
+            case .failure(let error):
+                // Error is already handled in the manager
+                print("Password reset failed: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
-struct ForgotPasswordView_Previews: PreviewProvider {
-    static var previews: some View {
-        ForgotPasswordView()
-            .environmentObject(AuthenticationManager())
-    }
+#Preview {
+    ForgotPasswordView()
+        .environmentObject(AuthenticationManager())
 }

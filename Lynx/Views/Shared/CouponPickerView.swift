@@ -95,9 +95,7 @@ struct CouponPickerView: View {
     }
 }
 
-struct CouponPickerView_Previews: PreviewProvider {
-    static var previews: some View {
-        CouponPickerView(selectedCoupon: .constant(nil))
-            .environmentObject(CouponManager())
-    }
+#Preview {
+    CouponPickerView(selectedCoupon: .constant(nil))
+        .environmentObject(CouponManager())
 }
